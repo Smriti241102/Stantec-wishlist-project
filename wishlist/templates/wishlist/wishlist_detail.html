@@ -1,0 +1,21 @@
+<h1>{{ wishlist.title }}</h1>
+
+<a href="{% url 'item_add' %}">Add Item</a>
+
+<ul>
+{% for item in items %}
+  <li>
+    <strong>{{ item.name }}</strong> (Priority: {{ item.priority }})<br>
+    {{ item.description }}<br>
+
+    {% if item.image %}<img src="{{ item.image.url }}" width="150">{% endif %}
+
+    <br><a href="{% url 'item_edit' item.pk %}">Edit</a>
+    <a href="{% url 'item_delete' item.pk %}">Delete</a>
+
+    {% if item.purchased %}
+      <p>Purchased by: {{ item.purchased_by }}</p>
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
