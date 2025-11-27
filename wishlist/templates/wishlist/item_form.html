@@ -2,7 +2,13 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h3>Add / Edit Wishlist Item</h3>
+    <h2>
+        {% if object %}
+            Edit Item
+        {% else %}
+            Add Item
+        {% endif %}
+    </h2>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -13,7 +19,7 @@
             {{ form.name.errors }}
         </div>
 
-        <div class="align-top mb-3">
+        <div class=" mb-3">
             {{ form.description.label_tag }}
             {{ form.description }}
             {{ form.description.errors }}
@@ -25,6 +31,7 @@
             {{ form.priority.errors }}
         </div>
 
+
         <div class="mb-3">
             {{ form.image.label_tag }}
             {{ form.image }}
@@ -34,16 +41,30 @@
         <!-- Links dynamic field -->
         <div class="mb-3">
             <label>Links</label>
+
             <div id="links-container">
-                <div class="input-group mb-2">
-                    <input type="url" name="links[]" class="form-control" placeholder="Paste link here">
-                    <button type="button" class="btn btn-danger remove-link">Remove</button>
-                </div>
+
+                {% if object and object.links %}
+                    {% for link in object.links %}
+                        <div class="input-group mb-2">
+                            <input type="url" name="links[]" class="form-control" value="{{ link }}">
+                            <button type="button" class="btn btn-danger remove-link">Remove</button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="input-group mb-2">
+                        <input type="url" name="links[]" class="form-control" placeholder="Paste link here">
+                        <button type="button" class="btn btn-danger remove-link">Remove</button>
+                    </div>
+                {% endif %}
+
             </div>
+
             <button type="button" class="btn btn-primary" id="add-link">Add Link</button>
         </div>
 
-        <button type="submit" class="btn btn-success">Save</button>
+
+        <button type="submit" class="btn btn-success">{% if object %} Save Changes {% else %} Add Item {% endif %}</button>
     </form>
 </div>
 

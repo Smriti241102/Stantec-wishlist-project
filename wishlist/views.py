@@ -33,21 +33,54 @@ def public_wishlist(request, username):
 
 class ItemCreateView(CreateView):
     model = WishlistItem
-    fields = ['name', 'description', 'links', 'priority', 'image']
+    fields = ['name', 'description', 'priority', 'image']  # REMOVE 'links'
     template_name = 'wishlist/item_form.html'
     success_url = reverse_lazy('my_wishlist')
 
     def form_valid(self, form):
+        # Assign wishlist
         wishlist, _ = Wishlist.objects.get_or_create(user=self.request.user)
         form.instance.wishlist = wishlist
-        return super().form_valid(form)
+
+        # Save item first (without links)
+        response = super().form_valid(form)
+
+        # Handle dynamic link fields ("links[]")
+        links = self.request.POST.getlist("links[]")
+        cleaned_links = [l.strip() for l in links if l.strip()]
+
+        self.object.links = cleaned_links
+        self.object.save(update_fields=["links"])
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["item"] = None  # Required for template logic
+        return context
 
 
 class ItemUpdateView(UpdateView):
     model = WishlistItem
-    fields = ['name', 'description', 'links', 'priority', 'image']
+    fields = ['name', 'description', 'priority', 'image']
     template_name = 'wishlist/item_form.html'
     success_url = reverse_lazy('my_wishlist')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        # Handle dynamic links input
+        links = self.request.POST.getlist("links[]")
+        cleaned_links = [l.strip() for l in links if l.strip()]
+        self.object.links = cleaned_links
+        self.object.save(update_fields=['links'])
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['object'] = self.object  # REQUIRED for prefill
+        return ctx
 
 
 class ItemDeleteView(DeleteView):
