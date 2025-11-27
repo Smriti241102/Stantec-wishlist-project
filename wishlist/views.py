@@ -52,19 +52,41 @@ class ItemUpdateView(UpdateView):
 
 class ItemDeleteView(DeleteView):
     model = WishlistItem
-    template_name = 'wishlist/item_confirm_delete.html'
     success_url = reverse_lazy('my_wishlist')
 
-@login_required
-def mark_purchased(request, username, pk):
-    item = get_object_or_404(WishlistItem, pk=pk)
-    item.purchased = True
-    item.purchased_by = request.user
-    item.purchased_at = timezone.now()
-    item.save()
-    return redirect('public_wishlist', username=username)
+    # skip confirmation page
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
 
 class SignUpView(CreateView):
     form_class = UserCreationForm
     template_name = "registration/signup.html"
     success_url = reverse_lazy('login')
+
+@login_required
+def mark_purchased_view(request, username, pk):
+    item = get_object_or_404(WishlistItem, pk=pk)
+    if item.purchased_by is None:
+        item.purchased_by = request.user
+        item.save()
+    return redirect('user_wishlist', username=item.user.username)
+
+@login_required
+def select_user_view(request):
+    # Exclude the current user from the list
+    users = User.objects.exclude(id=request.user.id)
+    return render(request, "wishlist/users.html", {"users": users})
+
+@login_required
+def user_wishlist_view(request, username):
+    other_user = get_object_or_404(User, username=username)
+    # Get all WishlistItems for all Wishlists belonging to this user
+    items = WishlistItem.objects.filter(wishlist__user=other_user).select_related('purchased_by', 'wishlist')
+
+    return render(request, "wishlist/user_wishlist.html", {
+        "wishlist_user": other_user,
+        "items": items
+    })
+
+

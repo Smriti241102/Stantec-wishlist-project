@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>{{ wishlist_user.username }}'s Wishlist</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+
+        {% for item in items %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                {% else %}
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg" class="card-img-top" alt="Placeholder">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.name }}</h5>
+
+                    {% if item.description %}
+                        <p class="card-text">{{ item.description }}</p>
+                    {% else %}
+                        <p class="card-text text-muted"><em>No description provided.</em></p>
+                    {% endif %}
+
+                    <p class="mb-1"><strong>Priority:</strong> {{ item.priority }}</p>
+
+                    {% if item.purchased_by %}
+                        <span class="badge bg-secondary">Purchased by {{ item.purchased_by.username }}</span>
+                    {% else %}
+                        <a href="{% url 'item_purchase' wishlist_user.username item.pk %}" class="btn btn-success btn-sm">
+                            Mark as Purchased
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if item.links %}
+                    <div class="card-footer">
+                        <small>Buy at:
+                            {% for link in item.links %}
+                                <a href="{{ link }}" target="_blank">Link {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </small>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

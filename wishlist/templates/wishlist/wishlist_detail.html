@@ -1,21 +1,134 @@
-<h1>{{ wishlist.title }}</h1>
+{% extends "base.html" %}
 
-<a href="{% url 'item_add' %}">Add Item</a>
+{% block content %}
+<div class="container mt-4">
 
-<ul>
-{% for item in items %}
-  <li>
-    <strong>{{ item.name }}</strong> (Priority: {{ item.priority }})<br>
-    {{ item.description }}<br>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{ wishlist.user.username }}'s Wishlist</h2>
 
-    {% if item.image %}<img src="{{ item.image.url }}" width="150">{% endif %}
+        {% if request.user == wishlist.user %}
+            <a href="{% url 'item_add' %}" class="btn btn-primary">
+                + Add Item
+            </a>
+        {% endif %}
+    </div>
 
-    <br><a href="{% url 'item_edit' item.pk %}">Edit</a>
-    <a href="{% url 'item_delete' item.pk %}">Delete</a>
+    {% if items %}
+        <div class="row">
+            {% for item in items %}
+              <div class="col-md-3 col-sm-6 mb-3">
 
-    {% if item.purchased %}
-      <p>Purchased by: {{ item.purchased_by }}</p>
+                <div class="card h-100 shadow-sm" style="font-size: 0.9rem;">
+
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" class="card-img-top"
+                            style="height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
+                            class="card-img-top"
+                            style="height: 150px; object-fit: cover;">
+                    {% endif %}
+
+                    <div class="card-body p-2 d-flex flex-column">
+
+                        <h6 class="card-title mb-1 text-truncate">{{ item.name }}</h6>
+
+                        <!-- Priority -->
+                        {% if item.priority %}
+                            <span class="badge bg-info mb-1" style="font-size: 0.7rem;">
+                                Priority: {{ item.priority }}
+                            </span>
+                        {% endif %}
+
+                        <!-- Description (truncated) -->
+                        {% if item.description %}
+                            <p class="card-text small text-muted mb-1"
+                              style="max-height: 40px; overflow: hidden;">
+                                {{ item.description }}
+                            </p>
+                        {% endif %}
+
+                        <!-- Links (first one only for compactness) -->
+                        {% if item.links %}
+                                <p class="small"><strong>Links:</strong></p>
+                                <ul class="small">
+                                    {% for link in item.links %}
+                                        <li>
+                                            <a href="{{ link }}" target="_blank">{{ link }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                        <!-- Purchased -->
+                        {% if item.purchased_by %}
+                            <span class="badge bg-success mt-1" style="font-size: 0.7rem;">
+                                Purchased by {{ item.purchased_by.username }}
+                            </span>
+                        {% endif %}
+
+                        <!-- Buttons -->
+                        <div class="mt-auto d-flex justify-content-between pt-2">
+                            {% if request.user == wishlist.user %}
+                                <a href="{% url 'item_edit' item.pk %}"
+                                  class="btn btn-sm btn-warning py-0 px-2">
+                                    Edit
+                                </a>
+                                <button class="btn btn-sm btn-danger py-0 px-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal{{ item.pk }}">
+                                  Delete
+                                </button>
+
+                            
+                            {% else %}
+                                {% if not item.purchased_by %}
+                                    <a href="{% url 'mark_purchased' item.pk %}"
+                                      class="btn btn-sm btn-success py-0 px-2">
+                                        ✓ Bought
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+            <!-- card to confirm deletion -->
+            <div class="modal fade" id="deleteModal{{ item.pk }}" tabindex="-1">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                  <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    Are you sure you want to delete <strong>{{ item.name }}</strong>?
+                  </div>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      Cancel
+                    </button>
+                    <form method="post" action="{% url 'item_delete' item.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <p>No items in this wishlist yet.</p>
     {% endif %}
-  </li>
-{% endfor %}
-</ul>
+
+</div>
+{% endblock %}

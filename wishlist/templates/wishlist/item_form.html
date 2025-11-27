@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Add / Edit Wishlist Item</h3>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-3">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {{ form.name.errors }}
+        </div>
+
+        <div class="align-top mb-3">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+            {{ form.description.errors }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.priority.label_tag }}
+            {{ form.priority }}
+            {{ form.priority.errors }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+            {{ form.image.errors }}
+        </div>
+
+        <!-- Links dynamic field -->
+        <div class="mb-3">
+            <label>Links</label>
+            <div id="links-container">
+                <div class="input-group mb-2">
+                    <input type="url" name="links[]" class="form-control" placeholder="Paste link here">
+                    <button type="button" class="btn btn-danger remove-link">Remove</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="add-link">Add Link</button>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addLinkBtn = document.getElementById('add-link');
+    const linksContainer = document.getElementById('links-container');
+
+    addLinkBtn.addEventListener('click', function() {
+        const div = document.createElement('div');
+        div.classList.add('input-group', 'mb-2');
+        div.innerHTML = `
+            <input type="url" name="links[]" class="form-control" placeholder="Paste link here">
+            <button type="button" class="btn btn-danger remove-link">Remove</button>
+        `;
+        linksContainer.appendChild(div);
+    });
+
+    linksContainer.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-link')) {
+            e.target.parentElement.remove();
+        }
+    });
+});
+</script>
+{% endblock %}
