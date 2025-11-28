@@ -42,7 +42,7 @@ class ItemCreateView(CreateView):
         wishlist, _ = Wishlist.objects.get_or_create(user=self.request.user)
         form.instance.wishlist = wishlist
 
-        # Save item first (without links)
+        # Save item first 
         response = super().form_valid(form)
 
         # Handle dynamic link fields ("links[]")

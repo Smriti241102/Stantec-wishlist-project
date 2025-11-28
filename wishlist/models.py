@@ -17,11 +17,20 @@ class Wishlist(models.Model):
 
 
 class WishlistItem(models.Model):
+
+    PRIORITY_CHOICES = [
+        ("5", "Very High"),
+        ("4", "High"),
+        ("3", "Medium"),
+        ("2", "Low"),
+        ("1", "Very Low"),
+    ]
+
     wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     links = models.JSONField(default=list, blank=True)
-    priority = models.IntegerField(default=3)
+    priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default="3")
     image = models.ImageField(upload_to='items/', blank=True, null=True)
 
     purchased = models.BooleanField(default=False)
