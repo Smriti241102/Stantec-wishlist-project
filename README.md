@@ -1,4 +1,4 @@
-# 🎁 Stantec Wishlist Project
+#  Stantec Wishlist Project
 
 ## Wishlist App
 
