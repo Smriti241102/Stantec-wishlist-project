@@ -42,19 +42,33 @@ Follow these steps to run the project locally.
 ```bash
 git clone [https://github.com/](https://github.com/)<your-repo>/wishlist-app.git
 cd wishlist-app
+```
 
+### 2. Create virtual environment
+```bash
 python3 -m venv venv
 source venv/bin/activate
-# For Windows users: venv\Scripts\activate
-
+# For Windows: venv\Scripts\activate
+```
+### 3. Install all the requirements
+```bash
 pip install -r requirements.txt
+```
 
-SECRET_KEY=your-secret-key
+### 4. Create a .env file in the project root
+```bash
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-
+```
+### 5. Run migrations
+```bash
 python manage.py migrate
-
+```
+### 6. Create superuser
+```bash
 python manage.py createsuperuser
-
+```
+### 7. Start the server
+```bash
 python manage.py runserver
+```
