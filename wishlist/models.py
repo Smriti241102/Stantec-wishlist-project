@@ -1,13 +1,12 @@
 from django.db import models
-
-# Create your models here.from django.db import models
 from django.contrib.auth.models import User
+
 
 class Wishlist(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='wishlist_items'  # <--- important!
+        related_name='wishlist_items'  
     )
     title = models.CharField(max_length=100, default="My Wishlist")
     created_at = models.DateTimeField(auto_now_add=True)

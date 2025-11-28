@@ -16,29 +16,39 @@
         <div class="mb-3">
             {{ form.name.label_tag }}
             {{ form.name }}
-            {{ form.name.errors }}
+            {% if form.name.errors %}
+                <div class="text-danger small"></div>{{ form.name.errors|striptags }}</div>
+            {% endif %}
+            
         </div>
 
         <div class=" mb-3">
             {{ form.description.label_tag }}
             {{ form.description }}
-            {{ form.description.errors }}
+            {% if form.description.errors %}
+                <div class="text-danger small"></div>{{ form.description.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <div class="mb-3">
             {{ form.priority.label_tag }}
             {{ form.priority }}
-            {{ form.priority.errors }}
+            {% if form.priority.errors %}
+                <div class="text-danger small">{{ form.priority.errors|striptags }}</div>
+            {% endif %}
         </div>
 
 
         <div class="mb-3">
             {{ form.image.label_tag }}
             {{ form.image }}
-            {{ form.image.errors }}
+            {% if form.image.errors %}
+                <div class="text-danger small">{{ form.image.errors|striptags }}</div>
+            {% endif %}
+            
         </div>
 
-        <!-- Links dynamic field -->
+        <!-- Links field -->
         <div class="mb-3">
             <label>Links</label>
 

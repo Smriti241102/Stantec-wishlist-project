@@ -15,14 +15,34 @@ from django.urls import reverse_lazy
 
 @login_required
 def my_wishlist(request):
+    """
+    Display the logged-in user's wishlist.
+    If the wishlist does not exist, create it.
+    Supports optional filtering:
+        - 'purchased': items purchased by anyone
+        - 'unpurchased': items not purchased yet
+        - 'all': show All Items
+    """
     wishlist, created = Wishlist.objects.get_or_create(user=request.user)
     items = WishlistItem.objects.filter(wishlist=wishlist).order_by('priority')
+    filter_value = request.GET.get("filter", "all")
+
+    if filter_value == "purchased":
+        items = items.filter(purchased_by__isnull=False)
+    elif filter_value == "unpurchased":
+        items = items.filter(purchased_by__isnull=True)
+
     return render(request, 'wishlist/wishlist_detail.html', {
         'wishlist': wishlist,
         'items': items,
+        "filter_value": filter_value,
     })
 
+@login_required
 def public_wishlist(request, username):
+    """
+    View another user's public wishlist.
+    """
     user = get_object_or_404(User, username=username)
     wishlist, created = Wishlist.objects.get_or_create(user=user)
     items = WishlistItem.objects.filter(wishlist=wishlist).order_by('priority')
@@ -32,8 +52,13 @@ def public_wishlist(request, username):
     })
 
 class ItemCreateView(CreateView):
+    """
+    Create a new item in the current user's wishlist.
+    Links are handled manually because they are provided
+    as dynamic input fields (links[]).
+    """
     model = WishlistItem
-    fields = ['name', 'description', 'priority', 'image']  # REMOVE 'links'
+    fields = ['name', 'description', 'priority', 'image'] 
     template_name = 'wishlist/item_form.html'
     success_url = reverse_lazy('my_wishlist')
 
@@ -42,10 +67,9 @@ class ItemCreateView(CreateView):
         wishlist, _ = Wishlist.objects.get_or_create(user=self.request.user)
         form.instance.wishlist = wishlist
 
-        # Save item first 
         response = super().form_valid(form)
 
-        # Handle dynamic link fields ("links[]")
+        # Handling link fields ("links[]")
         links = self.request.POST.getlist("links[]")
         cleaned_links = [l.strip() for l in links if l.strip()]
 
@@ -61,6 +85,10 @@ class ItemCreateView(CreateView):
 
 
 class ItemUpdateView(UpdateView):
+    """
+    Update an existing wishlist item.
+    Dynamic link fields are handled the same way as in creation.
+    """
     model = WishlistItem
     fields = ['name', 'description', 'priority', 'image']
     template_name = 'wishlist/item_form.html'
@@ -84,6 +112,11 @@ class ItemUpdateView(UpdateView):
 
 
 class ItemDeleteView(DeleteView):
+    """
+    Delete an item from the wishlist.
+    Automatically redirects back to the wishlist
+    and skips the confirmation template.
+    """
     model = WishlistItem
     success_url = reverse_lazy('my_wishlist')
 
@@ -93,17 +126,30 @@ class ItemDeleteView(DeleteView):
 
 
 class SignUpView(CreateView):
+    """
+    Register a new user
+    """
     form_class = UserCreationForm
     template_name = "registration/signup.html"
     success_url = reverse_lazy('login')
 
 @login_required
 def mark_purchased_view(request, username, pk):
+    """
+    Allow a user to mark someone else's item as purchased.
+    Does nothing if already purchased.
+    Redirects to the owner's wishlist page afterward.
+    """
     item = get_object_or_404(WishlistItem, pk=pk)
+
+    # Only mark if not already purchased
     if item.purchased_by is None:
         item.purchased_by = request.user
         item.save()
-    return redirect('user_wishlist', username=item.user.username)
+
+    # Redirect to the wishlist of the item's owner
+    return redirect('user_wishlist', username=item.wishlist.user.username)
+
 
 @login_required
 def select_user_view(request):
@@ -113,6 +159,9 @@ def select_user_view(request):
 
 @login_required
 def user_wishlist_view(request, username):
+    """
+    View someone else's wishlist.
+    """
     other_user = get_object_or_404(User, username=username)
     # Get all WishlistItems for all Wishlists belonging to this user
     items = WishlistItem.objects.filter(wishlist__user=other_user).select_related('purchased_by', 'wishlist')
@@ -121,5 +170,7 @@ def user_wishlist_view(request, username):
         "wishlist_user": other_user,
         "items": items
     })
+
+
 
 

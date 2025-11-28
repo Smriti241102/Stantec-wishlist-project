@@ -1,2 +1,30 @@
-<h1>Welcome to Wishlist Builder</h1>
-<p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'signup' %}">Signup</a> here</p>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold">Welcome to the Wishlist App</h1>
+        <p class="lead text-muted">
+            Create your wishlist, share it with others, and track purchased gifts.
+        </p>
+
+        {% if not user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-outline-secondary btn-lg">Sign Up</a>
+        </div>
+        {% else %}
+        <div class="mt-4">
+            <a href="{% url 'my_wishlist' %}" class="btn btn-success btn-lg">
+                Go to My Wishlist
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    
+
+</div>
+{% endblock %}

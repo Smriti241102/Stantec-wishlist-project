@@ -2,43 +2,60 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h3>{{ wishlist_user.username }}'s Wishlist</h3>
-    <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+    <h4>{{ wishlist_user.username }}'s Wishlist</h4>
+
+    {% if not items %}
+        <p>No items in this wishlist yet.</p>
+    {% endif %}
+
+    <div class="row row-cols-2 row-cols-md-4 g-3 mt-2">
 
         {% for item in items %}
         <div class="col">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm" style="font-size: 0.9rem;">
+                <!-- Image -->
                 {% if item.image %}
-                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                    <img src="{{ item.image.url }}" class="card-img-top"
+                         alt="{{ item.name }}"
+                         style="height: 110px; padding:0.5rem; object-fit: contain;">
                 {% else %}
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg" class="card-img-top" alt="Placeholder">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
+                         class="card-img-top"
+                         style="height: 110px; padding:0.5rem; object-fit: contain;"
+                         alt="Placeholder">
                 {% endif %}
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ item.name }}</h5>
+
+                <!-- Description -->
+                <div class="card-body p-2">
+                    <h6 class="card-title mb-1">{{ item.name }}</h6>
 
                     {% if item.description %}
-                        <p class="card-text">{{ item.description }}</p>
+                        <p class="card-text small mb-1">{{ item.description }}</p>
                     {% else %}
-                        <p class="card-text text-muted"><em>No description provided.</em></p>
+                        <p class="card-text text-muted small mb-1"><em>No description.</em></p>
                     {% endif %}
 
+                    <!-- Priority -->
                     <p class="mb-1"><strong>Priority:</strong> {{ item.priority }}</p>
 
+                    <!-- Purchase status -->
                     {% if item.purchased_by %}
-                        <span class="badge bg-secondary">Purchased by {{ item.purchased_by.username }}</span>
+                        <span class="badge bg-secondary small">Purchased by {{ item.purchased_by.username }}</span>
                     {% else %}
-                        <a href="{% url 'item_purchase' wishlist_user.username item.pk %}" class="btn btn-success btn-sm">
-                            Mark as Purchased
+                        <a href="{% url 'item_purchase' wishlist_user.username item.pk %}"
+                           class="btn btn-success btn-sm w-100">
+                           Purchase
                         </a>
                     {% endif %}
                 </div>
 
+                <!-- Links -->
                 {% if item.links %}
-                    <div class="card-footer">
-                        <small>Buy at:
+                    <div class="card-footer p-1">
+                        <small class="text-muted">Buy at:
                             {% for link in item.links %}
-                                <a href="{{ link }}" target="_blank">Link {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}
+                                <a href="{{ link }}" target="_blank" class="small">Link {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </small>
                     </div>

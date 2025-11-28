@@ -11,7 +11,24 @@
                 + Add Item
             </a>
         {% endif %}
+        
     </div>
+
+    <div class="d-flex gap-2 mb-3">
+
+    <a href="?filter=all" class="btn btn-outline-primary {% if filter_value == 'all' %}active{% endif %}">
+        All
+    </a>
+
+    <a href="?filter=purchased" class="btn btn-outline-success {% if filter_value == 'purchased' %}active{% endif %}">
+        Purchased
+    </a>
+
+    <a href="?filter=unpurchased" class="btn btn-outline-secondary {% if filter_value == 'unpurchased' %}active{% endif %}">
+        Unpurchased
+    </a>
+
+</div>
 
     {% if items %}
         <div class="row">
@@ -22,11 +39,11 @@
 
                     {% if item.image %}
                         <img src="{{ item.image.url }}" class="card-img-top"
-                            style="height: 150px; object-fit: cover;">
+                            style="height: 150px; padding:0.5rem; object-fit: contain;">
                     {% else %}
                         <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
                             class="card-img-top"
-                            style="height: 150px; object-fit: cover;">
+                            style="height: 150px; padding:0.5rem; object-fit: contain;">
                     {% endif %}
 
                     <div class="card-body p-2 d-flex flex-column">
@@ -36,7 +53,7 @@
                         <!-- Priority -->
                         {% if item.priority %}
                             <span class="badge bg-info mb-1" style="font-size: 0.7rem;">
-                                Priority: {{ item.priority }}
+                                Priority: {{ item.get_priority_display }}
                             </span>
                         {% endif %}
 
