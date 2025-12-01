@@ -2,8 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('mine/', views.my_wishlist, name='my_wishlist'),
-    path('mine/item/add/', views.ItemCreateView.as_view(), name='item_add'),
+    path('mine/', views.my_wishlists, name='my_wishlist'),
+    path('wishlist/create', views.create_wishlist, name='create_wishlist'),
+    path('wishlist/<int:wishlist_id>/item/add/', views.ItemCreateView.as_view(), name='item_add'),
     path('mine/item/<int:pk>/edit/', views.ItemUpdateView.as_view(), name='item_edit'),
     path('mine/item/<int:pk>/delete/', views.ItemDeleteView.as_view(), name='item_delete'),
     path('accounts/signup/', views.SignUpView.as_view(), name='signup'),

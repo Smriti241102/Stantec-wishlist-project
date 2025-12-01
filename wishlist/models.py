@@ -6,10 +6,14 @@ class Wishlist(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='wishlist_items'  
+        related_name='wishlists'  
     )
     title = models.CharField(max_length=100, default="My Wishlist")
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
@@ -43,6 +47,9 @@ class WishlistItem(models.Model):
     purchased_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-priority', 'created_at'] 
 
     def __str__(self):
         return self.name

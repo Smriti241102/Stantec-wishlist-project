@@ -18,29 +18,39 @@ from django.urls import reverse_lazy
 from .utils import send_purchase_notification
 
 @login_required
-def my_wishlist(request):
-    """
-    Display the logged-in user's wishlist.
-    If the wishlist does not exist, create it.
-    Supports optional filtering:
-        - 'purchased': items purchased by anyone
-        - 'unpurchased': items not purchased yet
-        - 'all': show All Items
-    """
-    wishlist, created = Wishlist.objects.get_or_create(user=request.user)
-    items = WishlistItem.objects.filter(wishlist=wishlist).order_by('priority')
-    filter_value = request.GET.get("filter", "all")
+def my_wishlists(request):
+    wishlists = request.user.wishlists.all()
 
+    # AUTO-CREATE a default wishlist if user has none
+    if not wishlists.exists():
+        default_wishlist = Wishlist.objects.create(
+            user=request.user,
+            title="My Wishlist"
+        )
+        wishlists = request.user.wishlists.all()
+
+    wishlist_id = request.GET.get('wishlist')
+    
+    if wishlist_id:
+        wishlist = get_object_or_404(Wishlist, id=wishlist_id, user=request.user)
+    else:
+        wishlist = wishlists.first()
+
+    items = WishlistItem.objects.filter(wishlist=wishlist).order_by('-priority') if wishlist else []
+
+    filter_value = request.GET.get("filter", "all")
     if filter_value == "purchased":
         items = items.filter(purchased_by__isnull=False)
     elif filter_value == "unpurchased":
         items = items.filter(purchased_by__isnull=True)
 
     return render(request, 'wishlist/wishlist_detail.html', {
+        'wishlists': wishlists,
         'wishlist': wishlist,
         'items': items,
-        "filter_value": filter_value,
+        'filter_value': filter_value
     })
+
 
 @login_required
 def public_wishlist(request, username):
@@ -56,36 +66,36 @@ def public_wishlist(request, username):
     })
 
 class ItemCreateView(CreateView):
-    """
-    Create a new item in the current user's wishlist.
-    Links are handled manually because they are provided
-    as dynamic input fields (links[]).
-    """
     model = WishlistItem
     fields = ['name', 'description', 'priority', 'image'] 
     template_name = 'wishlist/item_form.html'
-    success_url = reverse_lazy('my_wishlist')
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get wishlist from URL and ensure it belongs to current user
+        self.wishlist = get_object_or_404(
+            Wishlist, 
+            id=kwargs['wishlist_id'], 
+            user=request.user
+        )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # Assign wishlist
-        wishlist, _ = Wishlist.objects.get_or_create(user=self.request.user)
-        form.instance.wishlist = wishlist
+        form.instance.wishlist = self.wishlist
 
-        response = super().form_valid(form)
-
-        # Handling link fields ("links[]")
         links = self.request.POST.getlist("links[]")
-        cleaned_links = [l.strip() for l in links if l.strip()]
+        form.instance.links = [l.strip() for l in links if l.strip()]
 
-        self.object.links = cleaned_links
-        self.object.save(update_fields=["links"])
+        return super().form_valid(form)
 
-        return response
+    def get_success_url(self):
+        return reverse_lazy('my_wishlist') + f'?wishlist={self.wishlist.id}'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["item"] = None  # Required for template logic
+        context['wishlist'] = self.wishlist
+        context["item"] = None  # required by your template
         return context
+
 
 
 class ItemUpdateView(UpdateView):
@@ -175,17 +185,38 @@ def select_user_view(request):
 
 @login_required
 def user_wishlist_view(request, username):
-    """
-    View someone else's wishlist.
-    """
     other_user = get_object_or_404(User, username=username)
-    # Get all WishlistItems for all Wishlists belonging to this user
-    items = WishlistItem.objects.filter(wishlist__user=other_user).select_related('purchased_by', 'wishlist')
+    wishlists = other_user.wishlists.all()
+    
+    wishlist_id = request.GET.get('wishlist')
+    if wishlist_id:
+        wishlist = get_object_or_404(Wishlist, id=wishlist_id, user=other_user)
+    else:
+        wishlist = wishlists.first()
+
+    items = WishlistItem.objects.filter(wishlist=wishlist).select_related('purchased_by', 'wishlist')
 
     return render(request, "wishlist/user_wishlist.html", {
         "wishlist_user": other_user,
+        "wishlists": wishlists,
+        "wishlist": wishlist,
         "items": items
     })
+
+@login_required
+def create_wishlist(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', 'My Wishlist')
+        Wishlist.objects.create(user=request.user, title=title)
+        return redirect('my_wishlist')
+    return render(request, 'wishlist/create_wishlist.html')
+
+@login_required
+def delete_wishlist(request, wishlist_id):
+    wishlist = get_object_or_404(Wishlist, id=wishlist_id, user=request.user)
+    wishlist.delete()
+    return redirect('my_wishlist')
+    
 
 
 
