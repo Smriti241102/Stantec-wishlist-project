@@ -59,16 +59,15 @@ pip install -r requirements.txt
 ```bash
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-# Also replace email credentials in settings.py using your own to send emails
 ```
 ### 5. Run migrations
 ```bash
 python manage.py migrate
 ```
-### 6. Create superuser
-```bash
-python manage.py createsuperuser
-```
+### 6. Credentials for email
+
+Replace email credentials in settings.py using your own to send emails
+
 ### 7. Start the server
 ```bash
 python manage.py runserver
