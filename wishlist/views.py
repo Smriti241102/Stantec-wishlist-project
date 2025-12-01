@@ -10,8 +10,12 @@ from django.urls import reverse_lazy
 from .models import Wishlist, WishlistItem
 
 from django.contrib.auth.forms import UserCreationForm
+from .forms import SignUpForm
+
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
+
+from .utils import send_purchase_notification
 
 @login_required
 def my_wishlist(request):
@@ -129,9 +133,19 @@ class SignUpView(CreateView):
     """
     Register a new user
     """
-    form_class = UserCreationForm
+    form_class = SignUpForm
     template_name = "registration/signup.html"
     success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        """
+        If the form is valid, save the user and optionally log them in
+        """
+        response = super().form_valid(form)
+        # Optional: log in the user immediately after signup
+        # login(self.request, self.object)
+        return response
+
 
 @login_required
 def mark_purchased_view(request, username, pk):
@@ -146,6 +160,8 @@ def mark_purchased_view(request, username, pk):
     if item.purchased_by is None:
         item.purchased_by = request.user
         item.save()
+    # send email to the person
+    send_purchase_notification(item, request.user)
 
     # Redirect to the wishlist of the item's owner
     return redirect('user_wishlist', username=item.wishlist.user.username)

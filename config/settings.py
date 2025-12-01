@@ -129,3 +129,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_REDIRECT_URL = '/wishlist/mine/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'Put_email_here'
+EMAIL_HOST_PASSWORD = 'put_app_password'
+
+
+
+
