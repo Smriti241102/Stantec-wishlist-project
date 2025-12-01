@@ -59,6 +59,7 @@ pip install -r requirements.txt
 ```bash
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+# Also replace email credentials in settings.py using your own to send emails
 ```
 ### 5. Run migrations
 ```bash
